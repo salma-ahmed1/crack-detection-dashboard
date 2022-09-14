@@ -1,0 +1,217 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Zoom to extent of all features | Sample | ArcGIS API for JavaScript 4.24</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.24/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      require([
+      "esri/config",
+        "esri/WebMap",
+        "esri/views/MapView",
+        "esri/views/SceneView",
+        // "esri/layers/FeatureLayer",
+        "esri/widgets/LayerList",
+        "esri/core/Collection"
+      ], (esriConfig,WebMap,MapView, SceneView, /*FeatureLayer,*/ LayerList, Collection) => {
+        // const featureLayer = new FeatureLayer({
+        //   outFields: ["STATION_NAME", "COUNTRY", "TEMP"],
+        //   portalItem: {
+        //     // autocasts as new PortalItem()
+        //     id: "3a177da3f6524d61980fb41125b2349c"
+        //   },
+        //   title: "Temperature on Jan, 4, 2017"
+        // });
+
+        // When the layer is loaded, query for the extent
+        // of all features in the layer that satisfy the
+        // definitionExpression. Then set the view's
+        // extent to the returned extent of all features.
+
+        // featureLayer.when(() => {
+        //   featureLayer.definitionExpression = createDefinitionExpression("");
+        //   zoomToLayer(featureLayer);
+        // });
+
+        esriConfig.apiKey =
+        "AAPKf329b2da442d409fac4aeefc5b191600m1RNQ4zxR3hivOJENHZhTogSjkHwZZ2qR8_4-ccU8gmPSOEvxGjOBdp2WT4C0mKo";
+
+        const webmap = new WebMap({
+            portalItem: {
+            id: "aa43ffa3a5d54f5e92d765b9388b14ea",
+            },
+        });
+        const view = new MapView({
+            container: "viewDiv",
+
+            map: webmap,
+        });
+
+        const layerList = new LayerList({
+          view: view,
+          listItemCreatedFunction: createActions
+        });
+        view.ui.add(layerList, "top-right");
+
+        // definitionExpressions used by each action
+        // listed in the LayerList
+
+        const expressions = new Collection([
+          {
+            id: "d1",
+            expression: "TypeOfData = 'D1'"
+          },
+          {
+            id: "d2",
+            expression: "TypeOfData = 'D2'"
+          },
+          {
+            id: "d3",
+            expression: "TypeOfData = 'D3'"
+          },
+          {
+            id: "d4",
+            expression: "TypeOfData = 'D4'"
+          },
+          {
+            id: "d5",
+            expression: "TypeOfData = 'D5'"
+          },
+          {
+            id: "d6",
+            expression: "TypeOfData = 'D16"
+          },
+          {
+            id: "d7",
+            expression: "TypeOfData = 'D7'"
+          },
+          {
+            id: "d8",
+            expression: "TypeOfData = 'D8'"
+          }
+        ]);
+
+        // When an action is triggered, the definitionExpression
+        // is set on the layer and the view's extent updates
+        // to match the features visible in the layer
+
+        layerList.on("trigger-action", (event) => {
+          const actionId = event.action.id;
+          const layer = event.item.layer;
+subExpression
+          const subExpression = expressions.find((item) => {
+            return item.id === actionId;
+          }).expression;
+
+        //   console.log("subExpression: ",subExpression)
+          const definitionExpression = createDefinitionExpression();
+          console.log("definitionExpression: ",definitionExpression)
+          layer.definitionExpression = definitionExpression;
+
+          zoomToLayer(layer);
+        });
+
+        function createActions(event) {
+          const item = event.item;
+
+          item.actionsOpen = true;
+          item.actionsSections = [
+            [
+              {
+                title: "D1",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d1"
+              },
+              {
+                title: "D2",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d2"
+              },
+              {
+                title: "D3",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d3"
+              },
+              {
+                title: "D4",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d4"
+              },
+              {
+                title: "D5",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d5"
+              },
+              {
+                title: "D6",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d6"
+              },
+              {
+                title: "D7",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d7"
+              },
+              {
+                title: "D8",
+                className: "esri-icon-zoom-out-fixed",
+                id: "d7"
+              }
+            ]
+          ];
+        }
+
+        // Appends a definitionExpression to a base expression
+        // the base expression only returns freatures in
+        // Canada, USA, and Mexico. It excludes some US territories
+        // located on the other side of the dateline
+
+        function createDefinitionExpression(subExpression) {
+          const baseExpression =
+            "( typeOfData LIKE '%D1%' OR " +
+            "typeOfData LIKE '%D2%' OR " +
+            "typeOfData LIKE '%D3%' OR " +
+            "typeOfData LIKE '%D4%' OR " +
+            "typeOfData LIKE '%D5%' OR " +
+            "typeOfData LIKE '%D6%' OR " +
+            "typeOfData LIKE '%D7%' OR " +
+            "typeOfData LIKE '%D8%' )";
+
+          return subExpression ? baseExpression + " AND (" + subExpression + ")" : baseExpression;
+        }
+
+        // Zooms to the extent of the layer as defined by
+        // its definitionExpression
+        // This method will work for all FeatureLayers, even
+        // those without a saved `fullExtent` on the service.
+
+        function zoomToLayer(layer) {
+          return layer.queryExtent().then((response) => {
+            view.goTo(response.extent)
+            .catch((error) => {
+              console.error(error);
+            });
+          });
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
